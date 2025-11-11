@@ -47,11 +47,60 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = async (credentials: LoginCredentials) => {
     dispatch({ type: 'LOGIN_START' });
     try {
-      // Mock authentication - replace with real API
-      const mockUser: User = {
-        id: '1',
+      // Predefined test users
+      const predefinedUsers: Record<string, User> = {
+        'admin@finpilot.com': {
+          id: '1',
+          email: 'admin@finpilot.com',
+          name: 'System Admin',
+          role: 'admin',
+          isActive: true,
+          createdAt: '2024-01-01T00:00:00Z',
+          lastLogin: new Date().toISOString()
+        },
+        'student@test.com': {
+          id: '2',
+          email: 'student@test.com',
+          name: 'Rahul Kumar',
+          role: 'student',
+          isActive: true,
+          createdAt: '2024-01-01T00:00:00Z',
+          lastLogin: new Date().toISOString()
+        },
+        'professional@test.com': {
+          id: '3',
+          email: 'professional@test.com',
+          name: 'Priya Sharma',
+          role: 'professional',
+          isActive: true,
+          createdAt: '2024-01-01T00:00:00Z',
+          lastLogin: new Date().toISOString()
+        },
+        'hnw@test.com': {
+          id: '4',
+          email: 'hnw@test.com',
+          name: 'Amit Patel',
+          role: 'high_networth',
+          isActive: true,
+          createdAt: '2024-01-01T00:00:00Z',
+          lastLogin: new Date().toISOString()
+        },
+        'retiree@test.com': {
+          id: '5',
+          email: 'retiree@test.com',
+          name: 'Sunita Devi',
+          role: 'retiree',
+          isActive: true,
+          createdAt: '2024-01-01T00:00:00Z',
+          lastLogin: new Date().toISOString()
+        }
+      };
+
+      // Check for predefined users first
+      const mockUser = predefinedUsers[credentials.email] || {
+        id: Date.now().toString(),
         email: credentials.email,
-        name: 'John Doe',
+        name: 'New User',
         role: credentials.email.includes('admin') ? 'admin' : 'professional',
         isActive: true,
         createdAt: new Date().toISOString(),

@@ -3,26 +3,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PiggyBank, Target, TrendingUp, BookOpen } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from "recharts";
 import { User } from "@/types/user";
-
-const savingsData = [
-  { name: "Emergency Fund", value: 5000, color: "hsl(217, 91%, 60%)" },
-  { name: "Education", value: 8000, color: "hsl(142, 71%, 45%)" },
-  { name: "Travel", value: 3000, color: "hsl(38, 92%, 50%)" },
-  { name: "Gadgets", value: 2000, color: "hsl(215, 20%, 65%)" }
-];
-
-const monthlyData = [
-  { month: "Jan", income: 15000, expense: 12000, savings: 3000 },
-  { month: "Feb", income: 18000, expense: 13500, savings: 4500 },
-  { month: "Mar", income: 16000, expense: 11800, savings: 4200 },
-  { month: "Apr", income: 20000, expense: 14000, savings: 6000 }
-];
+import { getFinancialProfile } from "@/data/financialProfiles";
 
 interface Props {
   user: User;
 }
 
 const StudentDashboard = ({ user }: Props) => {
+  const profile = getFinancialProfile(user.role);
+
   return (
     <DashboardLayout>
       <div className="space-y-8">
@@ -31,7 +20,7 @@ const StudentDashboard = ({ user }: Props) => {
             Good morning, {user.name}! 📚
           </h1>
           <p className="text-muted-foreground mt-1">
-            Your savings rate is 28% - excellent for a student! Keep building those financial habits.
+            Your savings rate is {profile.savings.rate}% - excellent for a student! Keep building those financial habits.
           </p>
         </div>
 
@@ -43,8 +32,8 @@ const StudentDashboard = ({ user }: Props) => {
               <PiggyBank className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-foreground">₹18,000</div>
-              <p className="text-xs text-success">+12% from last month</p>
+              <div className="text-2xl font-bold text-foreground">₹{profile.savings.total.toLocaleString()}</div>
+              <p className="text-xs text-success">+{profile.netWorth.growth}% from last month</p>
             </CardContent>
           </Card>
 
@@ -54,8 +43,8 @@ const StudentDashboard = ({ user }: Props) => {
               <TrendingUp className="h-4 w-4 text-success" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-foreground">₹20,000</div>
-              <p className="text-xs text-success">Part-time + allowance</p>
+              <div className="text-2xl font-bold text-foreground">₹{profile.income.monthly.toLocaleString()}</div>
+              <p className="text-xs text-success">{profile.income.sources.join(' + ')}</p>
             </CardContent>
           </Card>
 
@@ -65,18 +54,18 @@ const StudentDashboard = ({ user }: Props) => {
               <Target className="h-4 w-4 text-warning" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-foreground">28%</div>
+              <div className="text-2xl font-bold text-foreground">{profile.savings.rate}%</div>
               <p className="text-xs text-success">Above average!</p>
             </CardContent>
           </Card>
 
           <Card className="shadow-card hover:shadow-elevated transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Financial Score</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Investment Returns</CardTitle>
               <BookOpen className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-foreground">78/100</div>
+              <div className="text-2xl font-bold text-foreground">{profile.investments.returns}%</div>
               <p className="text-xs text-primary">Building strong habits</p>
             </CardContent>
           </Card>
@@ -92,42 +81,71 @@ const StudentDashboard = ({ user }: Props) => {
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
                   <Pie
-                    data={savingsData}
+                    data={profile.savings.goals}
                     cx="50%"
                     cy="50%"
                     innerRadius={60}
                     outerRadius={100}
-                    dataKey="value"
+                    dataKey="current"
                   >
-                    {savingsData.map((entry, index) => (
+                    {profile.savings.goals.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value) => [`₹${value}`, 'Amount']} />
+                  <Tooltip formatter={(value) => [`₹${value}`, 'Current Amount']} />
                 </PieChart>
               </ResponsiveContainer>
             </CardContent>
           </Card>
 
-          {/* Monthly Trends */}
+          {/* Net Worth Trend */}
           <Card className="shadow-card">
             <CardHeader>
-              <CardTitle>Monthly Trends</CardTitle>
+              <CardTitle>Net Worth Growth</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={monthlyData}>
+                <BarChart data={profile.netWorth.trend}>
                   <XAxis dataKey="month" />
                   <YAxis />
-                  <Tooltip formatter={(value) => [`₹${value}`, '']} />
-                  <Bar dataKey="income" fill="hsl(142, 71%, 45%)" name="Income" />
-                  <Bar dataKey="expense" fill="hsl(0, 84%, 60%)" name="Expenses" />
-                  <Bar dataKey="savings" fill="hsl(217, 91%, 60%)" name="Savings" />
+                  <Tooltip formatter={(value) => [`₹${Number(value).toLocaleString()}`, 'Net Worth']} />
+                  <Bar dataKey="value" fill="hsl(217, 91%, 60%)" name="Net Worth" />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
           </Card>
         </div>
+
+        {/* Goal Progress */}
+        <Card className="shadow-card">
+          <CardHeader>
+            <CardTitle>Goal Progress</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {profile.savings.goals.map((goal, index) => (
+              <div key={index} className="space-y-2">
+                <div className="flex justify-between">
+                  <span className="font-medium">{goal.name}</span>
+                  <span className="text-sm text-muted-foreground">
+                    ₹{goal.current.toLocaleString()} / ₹{goal.target.toLocaleString()}
+                  </span>
+                </div>
+                <div className="w-full bg-muted rounded-full h-2">
+                  <div 
+                    className="h-2 rounded-full transition-all duration-300" 
+                    style={{ 
+                      width: `${Math.min((goal.current / goal.target) * 100, 100)}%`,
+                      backgroundColor: goal.color
+                    }}
+                  ></div>
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {Math.round((goal.current / goal.target) * 100)}% complete
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
 
         {/* Recommendations */}
         <Card className="shadow-card">
@@ -144,7 +162,7 @@ const StudentDashboard = ({ user }: Props) => {
             <div className="p-4 bg-success/10 rounded-lg">
               <h4 className="font-semibold text-success">Emergency Fund Goal</h4>
               <p className="text-sm text-muted-foreground">
-                You're 50% towards your ₹10,000 emergency fund goal. Great progress!
+                You're {Math.round((profile.savings.goals[0].current / profile.savings.goals[0].target) * 100)}% towards your emergency fund goal. Great progress!
               </p>
             </div>
           </CardContent>

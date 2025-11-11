@@ -4,9 +4,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Link2, Download, IndianRupee, DollarSign, Building2, Wallet, CreditCard, TrendingUp, ShoppingBag, Utensils, Car, Film } from "lucide-react";
+import { Link2, Download, IndianRupee, DollarSign, Building2, Wallet, CreditCard, TrendingUp, ShoppingBag, Utensils, Car, Film, Loader2 } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { toast } from "sonner";
 import CryptoWallet from "@/components/CryptoWallet";
+import ConnectAccountDialog from "@/components/ConnectAccountDialog";
+import AccountDetailsDialog from "@/components/AccountDetailsDialog";
+import { syncAccounts, downloadCSV } from "@/utils/accountSync";
 
 const accounts = [
   { id: 1, name: "HDFC Savings Account", type: "Savings", balance: 145000, currency: "INR", institution: "HDFC Bank", status: "Active" },
@@ -25,6 +29,10 @@ const recentTransactions = [
 
 const Accounts = () => {
   const [activeTab, setActiveTab] = useState("traditional");
+  const [connectDialogOpen, setConnectDialogOpen] = useState(false);
+  const [selectedAccount, setSelectedAccount] = useState<typeof accounts[0] | null>(null);
+  const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
+  const [syncingAccounts, setSyncingAccounts] = useState<number[]>([]);
 
   const formatCurrency = (amount: number, currency: string) => {
     if (currency === "INR") {
@@ -60,6 +68,64 @@ const Accounts = () => {
     }
   };
 
+  const handleViewAccount = (account: typeof accounts[0]) => {
+    setSelectedAccount(account);
+    setDetailsDialogOpen(true);
+  };
+
+  const handleSyncAccount = async (accountId: number) => {
+    setSyncingAccounts(prev => [...prev, accountId]);
+    
+    try {
+      const success = await syncAccounts();
+      if (success) {
+        toast.success("Accounts synced successfully!");
+      } else {
+        toast.error("Sync failed. Please try again.");
+      }
+    } catch (error) {
+      toast.error("Sync failed. Please try again.");
+    } finally {
+      setSyncingAccounts(prev => prev.filter(id => id !== accountId));
+    }
+  };
+
+  const handleExportData = () => {
+    // Generate CSV data for all accounts
+    const csvHeaders = ['Account Name', 'Type', 'Institution', 'Balance', 'Currency', 'Status'];
+    const csvRows = [csvHeaders.join(',')];
+    
+    accounts.forEach(account => {
+      csvRows.push([
+        account.name,
+        account.type,
+        account.institution,
+        account.balance.toString(),
+        account.currency,
+        account.status
+      ].join(','));
+    });
+
+    // Add transaction data
+    csvRows.push(''); // Empty line
+    csvRows.push('Recent Transactions');
+    csvRows.push(['Date', 'Merchant', 'Category', 'Amount', 'Type'].join(','));
+    
+    recentTransactions.forEach(txn => {
+      csvRows.push([
+        new Date(txn.date).toLocaleDateString(),
+        txn.merchant,
+        txn.category,
+        txn.amount.toString(),
+        txn.type
+      ].join(','));
+    });
+
+    const csvData = csvRows.join('\n');
+    downloadCSV(csvData, 'finpilot_accounts_export.csv');
+    toast.success("Account data exported successfully!");
+  };
+
   return (
     <DashboardLayout>
       <div className="space-y-8">
@@ -69,11 +135,11 @@ const Accounts = () => {
             <p className="text-muted-foreground mt-1">Manage your bank accounts and crypto wallets</p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline">
+            <Button variant="outline" onClick={() => setConnectDialogOpen(true)}>
               <Link2 className="h-4 w-4 mr-2" />
               Connect Account
             </Button>
-            <Button variant="outline">
+            <Button variant="outline" onClick={handleExportData}>
               <Download className="h-4 w-4 mr-2" />
               Export Data
             </Button>
@@ -170,8 +236,28 @@ const Accounts = () => {
                         </TableCell>
                         <TableCell>
                           <div className="flex gap-2">
-                            <Button size="sm" variant="outline">View</Button>
-                            <Button size="sm" variant="outline">Sync</Button>
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => handleViewAccount(account)}
+                            >
+                              View
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => handleSyncAccount(account.id)}
+                              disabled={syncingAccounts.includes(account.id)}
+                            >
+                              {syncingAccounts.includes(account.id) ? (
+                                <>
+                                  <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                                  Syncing...
+                                </>
+                              ) : (
+                                'Sync'
+                              )}
+                            </Button>
                           </div>
                         </TableCell>
                       </TableRow>
@@ -240,6 +326,18 @@ const Accounts = () => {
             Crypto holdings reported in compliance with regulatory guidelines.
           </p>
         </div>
+
+        {/* Dialogs */}
+        <ConnectAccountDialog 
+          open={connectDialogOpen} 
+          onOpenChange={setConnectDialogOpen} 
+        />
+        
+        <AccountDetailsDialog
+          account={selectedAccount}
+          open={detailsDialogOpen}
+          onOpenChange={setDetailsDialogOpen}
+        />
       </div>
     </DashboardLayout>
   );

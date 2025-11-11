@@ -9,6 +9,8 @@ import Login from "./pages/Login";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Accounts from "./pages/Accounts";
+import Transactions from "./pages/Transactions";
+import SpendingAnalysis from "./pages/SpendingAnalysis";
 import Insights from "./pages/Insights";
 import Portfolio from "./pages/Portfolio";
 import HoldingsOverview from "./pages/HoldingsOverview";
@@ -63,6 +65,18 @@ const AppRoutes = () => {
       <Route path="/accounts" element={
         <ProtectedRoute>
           <Accounts />
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/transactions" element={
+        <ProtectedRoute>
+          <Transactions />
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/spending" element={
+        <ProtectedRoute>
+          <SpendingAnalysis />
         </ProtectedRoute>
       } />
       

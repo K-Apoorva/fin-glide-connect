@@ -1,4 +1,4 @@
-import { LayoutDashboard, Wallet, TrendingUp, Calculator, Shield, Settings, Menu, PieChart, CreditCard, FileCheck, UserCog, BarChart3 } from "lucide-react";
+import { LayoutDashboard, Wallet, TrendingUp, Calculator, Shield, Settings, Menu, PieChart, CreditCard, FileCheck, UserCog, BarChart3, Receipt, PieChart as Analytics } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -8,6 +8,8 @@ import { useAuth } from "@/contexts/AuthContext";
 const navigationItems = [
   { title: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
   { title: "Accounts", path: "/accounts", icon: Wallet },
+  { title: "Transactions", path: "/transactions", icon: Receipt },
+  { title: "Spending Analysis", path: "/spending", icon: Analytics },
   { title: "Insights", path: "/insights", icon: TrendingUp },
   { title: "Portfolio", path: "/portfolio", icon: PieChart },
   { title: "Holdings Overview", path: "/portfolio/overview", icon: BarChart3 },
@@ -80,7 +82,7 @@ export function Sidebar() {
         )}
 
         {/* Navigation */}
-        <nav className="flex-1 p-3 space-y-1">
+        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
           {allItems.map((item) => (
             <NavLink
               key={item.path}
@@ -89,7 +91,7 @@ export function Sidebar() {
               activeClassName="bg-sidebar-accent text-sidebar-primary font-medium"
             >
               <item.icon className="h-5 w-5 shrink-0" />
-              {!collapsed && <span>{item.title}</span>}
+              {!collapsed && <span className="text-sm">{item.title}</span>}
             </NavLink>
           ))}
         </nav>
