@@ -1,14 +1,16 @@
-import { LayoutDashboard, Wallet, TrendingUp, Calculator, Shield, Settings, Menu, PieChart, CreditCard, FileCheck } from "lucide-react";
+import { LayoutDashboard, Wallet, TrendingUp, Calculator, Shield, Settings, Menu, PieChart, CreditCard, FileCheck, UserCog, BarChart3 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
 
 const navigationItems = [
   { title: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
   { title: "Accounts", path: "/accounts", icon: Wallet },
   { title: "Insights", path: "/insights", icon: TrendingUp },
   { title: "Portfolio", path: "/portfolio", icon: PieChart },
+  { title: "Holdings Overview", path: "/portfolio/overview", icon: BarChart3 },
   { title: "Debt Planner", path: "/debt-planner", icon: CreditCard },
   { title: "Tools", path: "/tools", icon: Calculator },
   { title: "Compliance", path: "/compliance", icon: FileCheck },
@@ -16,8 +18,17 @@ const navigationItems = [
   { title: "Settings", path: "/settings", icon: Settings },
 ];
 
+const adminItems = [
+  { title: "Admin Panel", path: "/admin", icon: UserCog },
+];
+
 export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
+  const { user, logout } = useAuth();
+
+  const allItems = user?.role === 'admin' 
+    ? [...navigationItems, ...adminItems]
+    : navigationItems;
 
   return (
     <aside
@@ -47,9 +58,30 @@ export function Sidebar() {
           </Button>
         </div>
 
+        {/* User Info */}
+        {!collapsed && user && (
+          <div className="p-4 border-b border-sidebar-border">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                <span className="text-primary font-semibold text-sm">
+                  {user.name.charAt(0).toUpperCase()}
+                </span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-sidebar-foreground truncate">
+                  {user.name}
+                </p>
+                <p className="text-xs text-sidebar-foreground/70 capitalize">
+                  {user.role.replace('_', ' ')}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Navigation */}
         <nav className="flex-1 p-3 space-y-1">
-          {navigationItems.map((item) => (
+          {allItems.map((item) => (
             <NavLink
               key={item.path}
               to={item.path}
@@ -63,14 +95,24 @@ export function Sidebar() {
         </nav>
 
         {/* Footer */}
-        {!collapsed && (
-          <div className="p-4 border-t border-sidebar-border">
-            <div className="flex items-center gap-2 text-xs text-sidebar-foreground/70">
-              <div className="w-2 h-2 rounded-full bg-success animate-pulse"></div>
-              <span>System Online</span>
-            </div>
-          </div>
-        )}
+        <div className="p-4 border-t border-sidebar-border">
+          {!collapsed && (
+            <>
+              <div className="flex items-center gap-2 text-xs text-sidebar-foreground/70 mb-3">
+                <div className="w-2 h-2 rounded-full bg-success animate-pulse"></div>
+                <span>System Online</span>
+              </div>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={logout}
+                className="w-full text-sidebar-foreground hover:bg-sidebar-accent"
+              >
+                Sign Out
+              </Button>
+            </>
+          )}
+        </div>
       </div>
     </aside>
   );

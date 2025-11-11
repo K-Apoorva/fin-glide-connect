@@ -1,9 +1,12 @@
+import { useState } from 'react';
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Link2, Download, IndianRupee, DollarSign, Building2, Wallet, CreditCard } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Link2, Download, IndianRupee, DollarSign, Building2, Wallet, CreditCard, TrendingUp, ShoppingBag, Utensils, Car, Film } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import CryptoWallet from "@/components/CryptoWallet";
 
 const accounts = [
   { id: 1, name: "HDFC Savings Account", type: "Savings", balance: 145000, currency: "INR", institution: "HDFC Bank", status: "Active" },
@@ -21,6 +24,8 @@ const recentTransactions = [
 ];
 
 const Accounts = () => {
+  const [activeTab, setActiveTab] = useState("traditional");
+
   const formatCurrency = (amount: number, currency: string) => {
     if (currency === "INR") {
       return `₹${amount.toLocaleString("en-IN")}`;
@@ -28,158 +33,216 @@ const Accounts = () => {
     return `$${amount.toLocaleString("en-US")}`;
   };
 
-  const formatDateTime = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleString("en-IN", {
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("en-IN", {
       day: "2-digit",
       month: "short",
       year: "numeric",
       hour: "2-digit",
-      minute: "2-digit",
+      minute: "2-digit"
     });
+  };
+
+  const getCategoryIcon = (category: string) => {
+    switch (category.toLowerCase()) {
+      case "income":
+        return <TrendingUp className="h-4 w-4 text-success" />;
+      case "shopping":
+        return <ShoppingBag className="h-4 w-4 text-primary" />;
+      case "food":
+        return <Utensils className="h-4 w-4 text-warning" />;
+      case "transport":
+        return <Car className="h-4 w-4 text-info" />;
+      case "entertainment":
+        return <Film className="h-4 w-4 text-purple-500" />;
+      default:
+        return <CreditCard className="h-4 w-4 text-muted-foreground" />;
+    }
   };
 
   return (
     <DashboardLayout>
       <div className="space-y-8">
-        {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Accounts</h1>
-            <p className="text-muted-foreground mt-1">Manage all your connected financial accounts</p>
+            <p className="text-muted-foreground mt-1">Manage your bank accounts and crypto wallets</p>
           </div>
-          <Button className="bg-primary hover:bg-primary/90">
-            <Link2 className="h-4 w-4 mr-2" />
-            Connect Account Aggregator
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline">
+              <Link2 className="h-4 w-4 mr-2" />
+              Connect Account
+            </Button>
+            <Button variant="outline">
+              <Download className="h-4 w-4 mr-2" />
+              Export Data
+            </Button>
+          </div>
         </div>
 
-        {/* Connection Status */}
-        <Card className="shadow-card border-primary/20">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-success animate-pulse"></div>
-              Account Aggregator Status
-            </CardTitle>
-            <CardDescription>Connected and syncing in real-time</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="text-center p-4 rounded-lg bg-accent">
-                <div className="text-2xl font-bold text-primary">4</div>
-                <div className="text-sm text-muted-foreground">Connected Accounts</div>
-              </div>
-              <div className="text-center p-4 rounded-lg bg-accent">
-                <div className="text-2xl font-bold text-success">99.8%</div>
-                <div className="text-sm text-muted-foreground">Uptime (30 days)</div>
-              </div>
-              <div className="text-center p-4 rounded-lg bg-accent">
-                <div className="text-2xl font-bold text-foreground">1.2s</div>
-                <div className="text-sm text-muted-foreground">Avg. Sync Time</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="traditional">Traditional Banking</TabsTrigger>
+            <TabsTrigger value="crypto">Crypto Wallets</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="traditional" className="space-y-6">
+            {/* Account Summary */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <Card className="shadow-card hover:shadow-elevated transition-shadow">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">Total Balance</CardTitle>
+                  <Wallet className="h-4 w-4 text-primary" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-foreground">₹4,30,000</div>
+                  <p className="text-xs text-success">Across all accounts</p>
+                </CardContent>
+              </Card>
 
-        {/* Accounts Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {accounts.map((account) => (
-            <Card key={account.id} className="shadow-card hover:shadow-elevated transition-shadow">
+              <Card className="shadow-card hover:shadow-elevated transition-shadow">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">Active Accounts</CardTitle>
+                  <Building2 className="h-4 w-4 text-success" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-foreground">4</div>
+                  <p className="text-xs text-muted-foreground">Connected banks</p>
+                </CardContent>
+              </Card>
+
+              <Card className="shadow-card hover:shadow-elevated transition-shadow">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">Monthly Inflow</CardTitle>
+                  <IndianRupee className="h-4 w-4 text-success" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-foreground">₹98,000</div>
+                  <p className="text-xs text-success">+6.5% from last month</p>
+                </CardContent>
+              </Card>
+
+              <Card className="shadow-card hover:shadow-elevated transition-shadow">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">Foreign Currency</CardTitle>
+                  <DollarSign className="h-4 w-4 text-warning" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-foreground">$1,250</div>
+                  <p className="text-xs text-muted-foreground">USD equivalent</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Account List */}
+            <Card className="shadow-card">
               <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      {account.type === "Savings" && <Wallet className="h-5 w-5 text-primary" />}
-                      {account.type === "Current" && <Building2 className="h-5 w-5 text-primary" />}
-                      {account.type === "Deposit" && <PiggyBank className="h-5 w-5 text-primary" />}
-                      {account.type === "Foreign" && <DollarSign className="h-5 w-5 text-primary" />}
-                    </div>
-                    <div>
-                      <CardTitle className="text-base">{account.name}</CardTitle>
-                      <CardDescription>{account.institution}</CardDescription>
-                    </div>
-                  </div>
-                  <Badge variant="outline" className="bg-success/10 text-success border-success/20">
-                    {account.status}
-                  </Badge>
-                </div>
+                <CardTitle>Connected Accounts</CardTitle>
+                <CardDescription>Your linked bank accounts and their current balances</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-3xl font-bold text-foreground">
-                      {formatCurrency(account.balance, account.currency)}
-                    </span>
-                    <span className="text-sm text-muted-foreground">{account.currency}</span>
-                  </div>
-                  <Badge variant="secondary">{account.type}</Badge>
-                </div>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Account Name</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Institution</TableHead>
+                      <TableHead>Balance</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {accounts.map((account) => (
+                      <TableRow key={account.id}>
+                        <TableCell className="font-medium">{account.name}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{account.type}</Badge>
+                        </TableCell>
+                        <TableCell>{account.institution}</TableCell>
+                        <TableCell className="font-semibold">
+                          {formatCurrency(account.balance, account.currency)}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={account.status === "Active" ? "default" : "secondary"}>
+                            {account.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-2">
+                            <Button size="sm" variant="outline">View</Button>
+                            <Button size="sm" variant="outline">Sync</Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </CardContent>
             </Card>
-          ))}
-        </div>
 
-        {/* Recent Transactions */}
-        <Card className="shadow-card">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle>Recent Transactions</CardTitle>
-              <CardDescription>Last 90 days of transaction history</CardDescription>
-            </div>
-            <Button variant="outline" size="sm">
-              <Download className="h-4 w-4 mr-2" />
-              Export CSV
-            </Button>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Date & Time</TableHead>
-                  <TableHead>Merchant</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>MCC</TableHead>
-                  <TableHead className="text-right">Amount</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {recentTransactions.map((txn) => (
-                  <TableRow key={txn.id}>
-                    <TableCell className="font-medium">{formatDateTime(txn.date)}</TableCell>
-                    <TableCell>{txn.merchant}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{txn.category}</Badge>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">{txn.mcc}</TableCell>
-                    <TableCell className={`text-right font-semibold ${txn.type === "credit" ? "text-success" : "text-destructive"}`}>
-                      {txn.type === "credit" ? "+" : ""}₹{Math.abs(txn.amount).toLocaleString("en-IN")}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+            {/* Recent Transactions */}
+            <Card className="shadow-card">
+              <CardHeader>
+                <CardTitle>Recent Transactions</CardTitle>
+                <CardDescription>Latest transactions across all your accounts</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Merchant</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead>Amount</TableHead>
+                      <TableHead>Type</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {recentTransactions.map((transaction) => (
+                      <TableRow key={transaction.id}>
+                        <TableCell className="text-sm">
+                          {formatDate(transaction.date)}
+                        </TableCell>
+                        <TableCell className="font-medium">{transaction.merchant}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            {getCategoryIcon(transaction.category)}
+                            <span>{transaction.category}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className={`font-semibold ${transaction.amount > 0 ? 'text-success' : 'text-destructive'}`}>
+                          {transaction.amount > 0 ? '+' : ''}₹{Math.abs(transaction.amount).toLocaleString()}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={transaction.type === "credit" ? "default" : "secondary"}>
+                            {transaction.type}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="crypto">
+            <CryptoWallet />
+          </TabsContent>
+        </Tabs>
+
+        {/* Compliance Footer */}
+        <div className="text-center text-xs text-muted-foreground p-4 bg-muted/30 rounded-lg">
+          <p>🟢 AMFI & SEBI Compliant | AES-256 Encrypted | TLS 1.3 Secured</p>
+          <p className="mt-1">
+            All account data synced via RBI-approved Account Aggregator framework. 
+            Crypto holdings reported in compliance with regulatory guidelines.
+          </p>
+        </div>
       </div>
     </DashboardLayout>
   );
 };
-
-const PiggyBank = ({ className }: { className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-  >
-    <path d="M19 5c-1.5 0-2.8 1.4-3 2-3.5-1.5-11-.3-11 5 0 1.8 0 3 2 4.5V20h4v-2h3v2h4v-4c1-.5 1.7-1 2-2h2v-4h-2c0-1-.5-1.5-1-2h0V5z" />
-    <path d="M2 9v1c0 1.1.9 2 2 2h1" />
-    <path d="M16 11h0" />
-  </svg>
-);
 
 export default Accounts;

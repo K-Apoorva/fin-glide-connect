@@ -2,21 +2,128 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import Login from "./pages/Login";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Accounts from "./pages/Accounts";
 import Insights from "./pages/Insights";
 import Portfolio from "./pages/Portfolio";
+import HoldingsOverview from "./pages/HoldingsOverview";
 import DebtPlanner from "./pages/DebtPlanner";
 import Tools from "./pages/Tools";
 import Compliance from "./pages/Compliance";
 import Consent from "./pages/Consent";
 import Settings from "./pages/Settings";
+import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
+
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { isAuthenticated, isLoading } = useAuth();
+  
+  if (isLoading) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  }
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  return <>{children}</>;
+};
+
+const AdminRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user, isAuthenticated } = useAuth();
+  
+  if (!isAuthenticated || user?.role !== 'admin') {
+    return <Navigate to="/dashboard" replace />;
+  }
+  
+  return <>{children}</>;
+};
+
+const AppRoutes = () => {
+  const { isAuthenticated } = useAuth();
+
+  return (
+    <Routes>
+      <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Index />} />
+      <Route path="/login" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Login />} />
+      
+      <Route path="/dashboard" element={
+        <ProtectedRoute>
+          <Dashboard />
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/accounts" element={
+        <ProtectedRoute>
+          <Accounts />
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/insights" element={
+        <ProtectedRoute>
+          <Insights />
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/portfolio" element={
+        <ProtectedRoute>
+          <Portfolio />
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/portfolio/overview" element={
+        <ProtectedRoute>
+          <HoldingsOverview />
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/debt-planner" element={
+        <ProtectedRoute>
+          <DebtPlanner />
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/tools" element={
+        <ProtectedRoute>
+          <Tools />
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/compliance" element={
+        <ProtectedRoute>
+          <Compliance />
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/consent" element={
+        <ProtectedRoute>
+          <Consent />
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/settings" element={
+        <ProtectedRoute>
+          <Settings />
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/admin" element={
+        <AdminRoute>
+          <Admin />
+        </AdminRoute>
+      } />
+      
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -25,20 +132,9 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/accounts" element={<Accounts />} />
-            <Route path="/insights" element={<Insights />} />
-            <Route path="/portfolio" element={<Portfolio />} />
-            <Route path="/debt-planner" element={<DebtPlanner />} />
-            <Route path="/tools" element={<Tools />} />
-            <Route path="/compliance" element={<Compliance />} />
-            <Route path="/consent" element={<Consent />} />
-            <Route path="/settings" element={<Settings />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <AuthProvider>
+            <AppRoutes />
+          </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>
     </ThemeProvider>
