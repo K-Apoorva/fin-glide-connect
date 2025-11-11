@@ -1,4 +1,4 @@
-import { LayoutDashboard, Wallet, TrendingUp, Calculator, Shield, Settings, Menu } from "lucide-react";
+import { LayoutDashboard, Wallet, TrendingUp, Calculator, Shield, Settings, Menu, PieChart, CreditCard, FileCheck } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -8,7 +8,10 @@ const navigationItems = [
   { title: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
   { title: "Accounts", path: "/accounts", icon: Wallet },
   { title: "Insights", path: "/insights", icon: TrendingUp },
+  { title: "Portfolio", path: "/portfolio", icon: PieChart },
+  { title: "Debt Planner", path: "/debt-planner", icon: CreditCard },
   { title: "Tools", path: "/tools", icon: Calculator },
+  { title: "Compliance", path: "/compliance", icon: FileCheck },
   { title: "Consent Center", path: "/consent", icon: Shield },
   { title: "Settings", path: "/settings", icon: Settings },
 ];

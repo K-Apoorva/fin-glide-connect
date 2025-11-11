@@ -4,9 +4,12 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { User, Bell, Lock, Smartphone } from "lucide-react";
+import { User, Bell, Lock, Smartphone, Moon, Sun } from "lucide-react";
+import { useTheme } from "next-themes";
 
 const Settings = () => {
+  const { theme, setTheme } = useTheme();
+
   return (
     <DashboardLayout>
       <div className="space-y-8">
@@ -129,6 +132,32 @@ const Settings = () => {
             <CardDescription>Customize your app experience</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Theme</Label>
+                <p className="text-sm text-muted-foreground">Switch between light and dark mode</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant={theme === "light" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setTheme("light")}
+                  className="gap-2"
+                >
+                  <Sun className="h-4 w-4" />
+                  Light
+                </Button>
+                <Button
+                  variant={theme === "dark" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setTheme("dark")}
+                  className="gap-2"
+                >
+                  <Moon className="h-4 w-4" />
+                  Dark
+                </Button>
+              </div>
+            </div>
             <div className="space-y-2">
               <Label htmlFor="currency">Default Currency</Label>
               <Input id="currency" value="INR - Indian Rupee" disabled />
